@@ -243,7 +243,7 @@ const seedDatabase = async () => {
         exercises: [
           { name: 'Squats', sets: 3, reps: 12 },
           { name: 'Push-ups', sets: 3, reps: 8 },
-          { name: 'Plank', sets: 3, duration: 30 }
+          { name: 'Plank', sets: 3, reps: 1, duration: 30 }
         ]
       },
       {

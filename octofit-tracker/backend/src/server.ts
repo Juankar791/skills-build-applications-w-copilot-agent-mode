@@ -8,7 +8,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofi
 // Codespaces support - generate API URL based on environment
 const getApiUrl = (): string => {
   if (process.env.CODESPACE_NAME) {
-    return `https://${process.env.CODESPACE_NAME}-8000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || 'githubpreview.dev'}`;
+    return `https://${process.env.CODESPACE_NAME}-8000.app.github.dev`;
   }
   return `http://localhost:${PORT}`;
 };
