@@ -1,0 +1,37 @@
+import express, { Express, Request, Response } from 'express';
+import mongoose from 'mongoose';
+
+const app: Express = express();
+const PORT = process.env.PORT || 8000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofit-tracker';
+
+// Middleware
+app.use(express.json());
+
+// MongoDB Connection
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('MongoDB connected successfully');
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+  });
+
+// Routes
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'OK',
+    message: 'OctoFit Tracker Backend is running',
+    port: PORT,
+    mongodb: MONGODB_URI
+  });
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Environment:`);
+  console.log(`  - Backend Port: ${PORT}`);
+  console.log(`  - MongoDB URI: ${MONGODB_URI}`);
+  console.log(`  - Frontend Port: 5173`);
+});
