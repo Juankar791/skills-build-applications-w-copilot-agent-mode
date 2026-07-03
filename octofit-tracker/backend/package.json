@@ -7,7 +7,8 @@
     "start": "node dist/server.js",
     "dev": "ts-node src/server.ts",
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "seed": "ts-node src/scripts/seed.ts"
   },
   "keywords": ["express", "typescript", "mongodb"],
   "author": "",

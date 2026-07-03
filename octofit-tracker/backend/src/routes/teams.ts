@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Team } from '../models/Team';
 
 const router = Router();
 
@@ -6,89 +7,119 @@ const router = Router();
  * GET /api/teams
  * Retrieve all teams
  */
-router.get('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'Get all teams',
-    endpoint: '/api/teams',
-    method: 'GET',
-    status: 'Not implemented yet'
-  });
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const teams = await Team.find().populate('leader members', 'username email firstName lastName');
+    res.json({
+      message: 'Get all teams',
+      count: teams.length,
+      data: teams
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * POST /api/teams
  * Create a new team
  */
-router.post('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'Create new team',
-    endpoint: '/api/teams',
-    method: 'POST',
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const newTeam = new Team(req.body);
+    await newTeam.save();
+    res.status(201).json({
+      message: 'Team created successfully',
+      data: newTeam
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 /**
  * GET /api/teams/:id
  * Retrieve a specific team by ID
  */
-router.get('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Get team by ID',
-    endpoint: '/api/teams/:id',
-    method: 'GET',
-    teamId: id,
-    status: 'Not implemented yet'
-  });
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const team = await Team.findById(id).populate('leader members', 'username email firstName lastName');
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    res.json({
+      message: 'Get team by ID',
+      data: team
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * PUT /api/teams/:id
  * Update team details
  */
-router.put('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Update team details',
-    endpoint: '/api/teams/:id',
-    method: 'PUT',
-    teamId: id,
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updatedTeam = await Team.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updatedTeam) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    res.json({
+      message: 'Team updated successfully',
+      data: updatedTeam
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 /**
  * DELETE /api/teams/:id
  * Delete team
  */
-router.delete('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Delete team',
-    endpoint: '/api/teams/:id',
-    method: 'DELETE',
-    teamId: id,
-    status: 'Not implemented yet'
-  });
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedTeam = await Team.findByIdAndDelete(id);
+    if (!deletedTeam) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    res.json({
+      message: 'Team deleted successfully',
+      data: deletedTeam
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * POST /api/teams/:id/members
  * Add member to team
  */
-router.post('/:id/members', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Add member to team',
-    endpoint: '/api/teams/:id/members',
-    method: 'POST',
-    teamId: id,
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.post('/:id/members', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+    const team = await Team.findByIdAndUpdate(
+      id,
+      { $addToSet: { members: userId } },
+      { new: true }
+    );
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    res.json({
+      message: 'Member added to team',
+      data: team
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 export default router;

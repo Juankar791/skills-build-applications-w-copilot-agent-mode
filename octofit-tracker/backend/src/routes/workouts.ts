@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { Workout } from '../models/Workout';
 
 const router = Router();
 
@@ -6,104 +7,139 @@ const router = Router();
  * GET /api/workouts
  * Retrieve all available workouts
  */
-router.get('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'Get all workouts',
-    endpoint: '/api/workouts',
-    method: 'GET',
-    status: 'Not implemented yet'
-  });
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const workouts = await Workout.find().populate('userId', 'username email');
+    res.json({
+      message: 'Get all workouts',
+      count: workouts.length,
+      data: workouts
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * POST /api/workouts
  * Create a new personalized workout suggestion
  */
-router.post('/', (req: Request, res: Response) => {
-  res.json({
-    message: 'Create new workout',
-    endpoint: '/api/workouts',
-    method: 'POST',
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const newWorkout = new Workout(req.body);
+    await newWorkout.save();
+    res.status(201).json({
+      message: 'Workout created successfully',
+      data: newWorkout
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 /**
  * GET /api/workouts/:id
  * Retrieve a specific workout by ID
  */
-router.get('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Get workout by ID',
-    endpoint: '/api/workouts/:id',
-    method: 'GET',
-    workoutId: id,
-    status: 'Not implemented yet'
-  });
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const workout = await Workout.findById(id).populate('userId', 'username email');
+    if (!workout) {
+      return res.status(404).json({ error: 'Workout not found' });
+    }
+    res.json({
+      message: 'Get workout by ID',
+      data: workout
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * GET /api/workouts/user/:userId
  * Retrieve personalized workout suggestions for a user
  */
-router.get('/user/:userId', (req: Request, res: Response) => {
-  const { userId } = req.params;
-  res.json({
-    message: 'Get personalized workouts for user',
-    endpoint: '/api/workouts/user/:userId',
-    method: 'GET',
-    userId: userId,
-    status: 'Not implemented yet'
-  });
+router.get('/user/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const workouts = await Workout.find({ userId });
+    res.json({
+      message: 'Get personalized workouts for user',
+      count: workouts.length,
+      data: workouts
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * PUT /api/workouts/:id
  * Update workout details
  */
-router.put('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Update workout',
-    endpoint: '/api/workouts/:id',
-    method: 'PUT',
-    workoutId: id,
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updatedWorkout = await Workout.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updatedWorkout) {
+      return res.status(404).json({ error: 'Workout not found' });
+    }
+    res.json({
+      message: 'Workout updated successfully',
+      data: updatedWorkout
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 /**
  * DELETE /api/workouts/:id
  * Delete workout
  */
-router.delete('/:id', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Delete workout',
-    endpoint: '/api/workouts/:id',
-    method: 'DELETE',
-    workoutId: id,
-    status: 'Not implemented yet'
-  });
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedWorkout = await Workout.findByIdAndDelete(id);
+    if (!deletedWorkout) {
+      return res.status(404).json({ error: 'Workout not found' });
+    }
+    res.json({
+      message: 'Workout deleted successfully',
+      data: deletedWorkout
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 /**
  * POST /api/workouts/:id/complete
  * Mark workout as completed
  */
-router.post('/:id/complete', (req: Request, res: Response) => {
-  const { id } = req.params;
-  res.json({
-    message: 'Mark workout as completed',
-    endpoint: '/api/workouts/:id/complete',
-    method: 'POST',
-    workoutId: id,
-    status: 'Not implemented yet',
-    body: req.body
-  });
+router.post('/:id/complete', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updatedWorkout = await Workout.findByIdAndUpdate(
+      id,
+      {
+        completed: true,
+        completedDate: new Date()
+      },
+      { new: true }
+    );
+    if (!updatedWorkout) {
+      return res.status(404).json({ error: 'Workout not found' });
+    }
+    res.json({
+      message: 'Workout marked as completed',
+      data: updatedWorkout
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 export default router;
